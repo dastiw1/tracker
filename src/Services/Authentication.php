@@ -4,6 +4,10 @@ namespace PragmaRX\Tracker\Services;
 
 use Illuminate\Foundation\Application;
 use PragmaRX\Support\Config as Config;
+use Illuminate\Support\Facades\Auth;
+use JWTAuth;
+use Illuminate\Support\Facades\Route;
+use Request;
 
 class Authentication
 {
@@ -12,11 +16,15 @@ class Authentication
     private $authentication = [];
 
     private $app;
+    private $request;
 
     public function __construct(Config $config, Application $app)
     {
         $this->app = $app;
-
+        //$requests = Request::is('api/');
+        //die($requests);
+        //$this->request = $requests::is('api/');
+        //$this->request = Request();
         $this->config = $config;
     }
 
@@ -27,26 +35,16 @@ class Authentication
 
     private function executeAuthMethod($method)
     {
-        $guards = $this->config->get('authentication_guards');
-        // Make sure authentication_guards at least contains a null value to DRY code
-        if (empty($guards)) {
-            $guards[] = null;
-        }
-
+        //$request = new Request();
+        //dd($this->request::is('api/*'));
+        //dd($this->request);
         foreach ($this->getAuthentication() as $auth) {
-            foreach ($guards as $guard) {
-                // Call guard() if not null
-                if ($guard && $guard != 'null') {
-                    $auth = $auth->guard($guard);
-                }
-            }
             if (is_callable([$auth, $method], true, $callable_name)) {
                 if ($data = $auth->$method()) {
                     return $data;
                 }
             }
         }
-
         return false;
     }
 
@@ -55,18 +53,22 @@ class Authentication
         foreach ((array) $this->config->get('authentication_ioc_binding') as $binding) {
             $this->authentication[] = $this->app->make($binding);
         }
-
         return $this->authentication;
     }
 
     public function user()
     {
-        return $this->executeAuthMethod($this->config->get('authenticated_user_method'));
+        if (Request::is('api/*') && strlen(JWTAuth::getToken()) > 0)
+            return JWTAuth::parseToken()->authenticate();
+        else
+            return $this->executeAuthMethod($this->config->get('authenticated_user_method'));
     }
 
     public function getCurrentUserId()
     {
-        if ($this->check()) {
+        if (Request::is('api/*') && strlen(JWTAuth::getToken()) > 0)
+            return $this->user()->id;
+        else if ($this->check()) {
             return $this->user()->{$this->config->get('authenticated_user_id_column')};
         }
     }
