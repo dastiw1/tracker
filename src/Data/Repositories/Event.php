@@ -179,6 +179,13 @@ class Event extends Repository
         if (is_string($event)) {
             $event = [
                 'event'  => $event,
+                'entity_id' => null,
+                'object' => null,
+            ];
+        } else if(is_array($event)) {
+            $event = [
+                'event' => $event['event'],
+                'entity_id' => $event['entity_id'],
                 'object' => null,
             ];
         }
