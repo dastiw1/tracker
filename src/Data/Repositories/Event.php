@@ -182,13 +182,6 @@ class Event extends Repository
                 'entity_id' => null,
                 'object' => null,
             ];
-        } else if(is_array($event)) {
-          
-            $event = [
-                'event' => $event['event']['name'],
-                'entity_id' => $event['event']['entity_id'] ?? null,
-                'object' => null,
-            ];
         }
 
         return $event;
