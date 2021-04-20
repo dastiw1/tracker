@@ -183,9 +183,10 @@ class Event extends Repository
                 'object' => null,
             ];
         } else if(is_array($event)) {
+          
             $event = [
-                'event' => $event['event'],
-                'entity_id' => $event['entity_id'],
+                'event' => $event['event']['name'],
+                'entity_id' => $event['event']['entity_id'] ?? null,
                 'object' => null,
             ];
         }
@@ -203,8 +204,9 @@ class Event extends Repository
      */
     private function getEventEntityId($event)
     {
+        // dd($event);
         return isset($event['entity_id'])
-        ? $this->$event['entity_id']
+        ? $event['entity_id']
         : null;
     }
 }
