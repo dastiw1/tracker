@@ -166,9 +166,10 @@ class Event extends Repository
      */
     private function getEventId($event)
     {
-        return $event['event']
+        $name = isset($event['name']) ? $event['name'] : $event['event'] ?? null;
+        return $name
             ? $this->findOrCreate(
-                ['name' => $event['event']],
+                ['name' => $name],
                 ['name']
             )
             : null;
